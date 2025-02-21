@@ -1,35 +1,44 @@
 import sys
 import random
-from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtGui import QColor, QPainter
 
 
-class MainWindow(QMainWindow):
+class CircleDrawer(QMainWindow):
     def __init__(self):
-        super(MainWindow, self).__init__()
-        uic.loadUi('UI.ui', self)
+        super().__init__()
+        self.setWindowTitle("Random Circle Drawer")
+        self.setGeometry(100, 100, 800, 600)
 
-        self.button = self.findChild(QPushButton, 'buttonSokolovich')
-        self.button.clicked.connect(self.draw_circles)
+        self.button = QPushButton("Draw Circle", self)
+        self.button.clicked.connect(self.draw_random_circle)  # Исправлено: подключаем метод
 
-        self.circles = []
+        layout = QVBoxLayout()
+        layout.addWidget(self.button)
 
-    def draw_circles(self):
-        diameter = random.randint(20, 100)
-        x = random.randint(0, self.width() - diameter)
-        y = random.randint(0, self.height() - diameter)
-        self.circles.append((x, y, diameter))
-        self.update()
+        container = QWidget()
+        container.setLayout(layout)
+        self.setCentralWidget(container)
+
+        self.circle_radius = 0
+        self.circle_color = QColor(0, 0, 0)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setBrush(QColor(255, 255, 0))  # Желтый цвет
-        for (x, y, diameter) in self.circles:
-            painter.drawEllipse(x, y, diameter, diameter)
+        if self.circle_radius > 0:
+            painter.setBrush(self.circle_color)
+            painter.drawEllipse((self.width() - self.circle_radius) // 2,
+                                (self.height() - self.circle_radius) // 2,
+                                self.circle_radius, self.circle_radius)
+
+    def draw_random_circle(self):
+        self.circle_radius = random.randint(20, 200)
+        self.circle_color = QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.update()  # Обновляем интерфейс для перерисовки
 
 
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = CircleDrawer()
+    window.show()
+    sys.exit(app.exec_())
